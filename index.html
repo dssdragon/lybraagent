@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Autonomous Agent</title>
+    <style>
+        /* Reset dan dasar */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6c5ce7, #00b894);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+        
+        /* Card */
+        .card {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #2d2d44;
+        }
+        
+        /* Preset buttons */
+        .presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        
+        .preset-btn {
+            padding: 6px 16px;
+            background: #2d2d44;
+            border: none;
+            border-radius: 20px;
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: #3d3d5c;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        /* Textarea */
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: #0f0f1a;
+            border: 1px solid #2d2d44;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+        
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 16px;
+        }
+        
+        .btn:hover {
+            background: #5a4bd1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #3d3d5c;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .loading .dots span {
+            display: inline-block;
+            font-size: 2rem;
+            animation: dot 1.4s infinite;
+        }
+        
+        .loading .dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading .dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes dot {
+            0%, 80%, 100% { opacity: 0; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        /* Result */
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #0f0f1a;
+            border-radius: 10px;
+            border: 1px solid #2d2d44;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result .label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #2d2d44;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 16px;
+        }
+        
+        /* Error state */
+        .result.error {
+            border-color: #e74c3c;
+        }
+        
+        .result.error .label {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 Autonomous Agent</h1>
+            <p>Beri tugas, agent AI akan mengerjakannya untuk Anda</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <!-- Preset Tugas -->
+            <div class="presets">
+                <button class="preset-btn" onclick="setTask('Buatkan 5 ide judul artikel tentang artificial intelligence')">
+                    💡 Ide Judul
+                </button>
+                <button class="preset-btn" onclick="setTask('Ringkaskan teks berikut: Artificial intelligence (AI) adalah simulasi proses kecerdasan manusia oleh mesin, terutama sistem komputer. AI memungkinkan mesin untuk belajar dari pengalaman, menyesuaikan dengan input baru, dan melakukan tugas-tugas yang biasanya membutuhkan kecerdasan manusia.')">
+                    📝 Ringkasan
+                </button>
+                <button class="preset-btn" onclick="setTask('Tulis puisi pendek tentang teknologi dan masa depan')">
+                    ✍️ Puisi
+                </button>
+                <button class="preset-btn" onclick="setTask('Buatkan daftar 5 tips belajar coding untuk pemula')">
+                    🎯 Tips Coding
+                </button>
+            </div>
+
+            <!-- Input -->
+            <textarea id="taskInput" placeholder="Tulis tugas untuk agent AI di sini...&#10;&#10;Contoh: Buatkan 3 ide konten untuk blog tentang AI">Buatkan 3 ide konten untuk blog tentang AI</textarea>
+
+            <!-- Tombol Kirim -->
+            <button class="btn" id="submitBtn" onclick="sendTask()">
+                🚀 Kirim Tugas ke Agent
+            </button>
+
+            <!-- Loading Animation -->
+            <div class="loading" id="loading">
+                <div class="dots">
+                    <span>•</span><span>•</span><span>•</span>
+                </div>
+                <p style="margin-top: 8px;">Agent sedang berpikir...</p>
+            </div>
+
+            <!-- Hasil -->
+            <div class="result" id="result">
+                <div class="label">📋 Hasil dari Agent:</div>
+                <div id="resultContent"></div>
+            </div>
+
+            <div class="badge">⚡ Model: Llama 3.3 70B via Groq</div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // Set task dari preset button
+        // =============================================
+        function setTask(text) {
+            document.getElementById('taskInput').value = text;
+        }
+
+        // =============================================
+        // Kirim tugas ke agent
+        // =============================================
+        async function sendTask() {
+            const input = document.getElementById('taskInput');
+            const task = input.value.trim();
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            const loadingDiv = document.getElementById('loading');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Validasi
+            if (!task) {
+                alert('📝 Tolong tulis tugas terlebih dahulu!');
+                return;
+            }
+
+            // Tampilkan loading, hide hasil
+            loadingDiv.classList.add('show');
+            resultDiv.classList.remove('show');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Memproses...';
+
+            try {
+                // Kirim ke server
+                const response = await fetch('/api/agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task: task })
+                });
+
+                const data = await response.json();
+
+                // Tampilkan hasil
+                if (data.success) {
+                    resultContent.textContent = data.result;
+                    resultDiv.className = 'result show';
+                } else {
+                    resultContent.textContent = '❌ Error: ' + (data.error || 'Terjadi kesalahan');
+                    resultDiv.className = 'result show error';
+                }
+
+            } catch (error) {
+                resultContent.textContent = '❌ Gagal terhubung ke server: ' + error.message;
+                resultDiv.className = 'result show error';
+            } finally {
+                loadingDiv.classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Kirim Tugas ke Agent';
+            }
+        }
+
+        // =============================================
+        // Enter untuk submit (Shift+Enter untuk new line)
+        // =============================================
+        document.getElementById('taskInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendTask();
+            }
+        });
+
+        // =============================================
+        // Auto-focus ke input saat halaman dimuat
+        // =============================================
+        window.addEventListener('load', () => {
+            document.getElementById('taskInput').focus();
+        });
+    </script>
+
+</body>
+</html>
